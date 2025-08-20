@@ -128,3 +128,23 @@ class AssignRoleSerializer(serializers.Serializer):
     role_id = serializers.IntegerField()
     expires_date = serializers.DateTimeField(required=False, allow_null=True)
     notes = serializers.CharField(required=False, allow_blank=True)
+
+class PersonnelBasicSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(source='get_full_name', read_only=True)
+    
+    class Meta:
+        model = Personnel
+        fields = [
+            'id', 'username', 'first_name', 'last_name', 'full_name',
+            'employee_id', 'email'
+        ]
+
+class PatientBasicSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(source='get_full_name', read_only=True)
+    
+    class Meta:
+        model = Patient
+        fields = [
+            'id', 'first_name', 'last_name', 'full_name', 
+            'email', 'phone_primary', 'date_of_birth'
+        ]

@@ -245,3 +245,14 @@ class AppointmentStatusHistorySerializer(serializers.ModelSerializer):
     
     def get_new_status_display(self, obj):
         return dict(Appointment.STATUS_CHOICES).get(obj.new_status, obj.new_status)
+
+class AppointmentBasicSerializer(serializers.ModelSerializer):
+    patient_name = serializers.CharField(source='patient.get_full_name', read_only=True)
+    provider_name = serializers.CharField(source='provider.get_full_name', read_only=True)
+    
+    class Meta:
+        model = Appointment
+        fields = [
+            'id', 'appointment_date', 'appointment_time', 
+            'patient_name', 'provider_name', 'status', 'reason_for_visit'
+        ]

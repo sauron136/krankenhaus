@@ -102,3 +102,4 @@ class MedicationAdministrationUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = MedicationAdministration
         fields = ['actual_time', 'dose_given', 'status', 'notes']
+

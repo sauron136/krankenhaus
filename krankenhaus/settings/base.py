@@ -19,6 +19,9 @@ LOCAL_APPS = [
     'authentication',
     'appointments',
     'pharmacy',
+    'inventory',
+    'lab',
+    'medical_records',
 ]
 
 THIRD_PARTY_APPS = [

@@ -16,3 +16,4 @@ Not Found: /favicon.ico
 Watching for file changes with StatReloader
 /home/tofunmi/dev/backend/krankenhaus/krankenhaus/settings/base.py changed, reloading.
 Watching for file changes with StatReloader
+/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/sqlparse/engine/grouping.py changed, reloading.
