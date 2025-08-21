@@ -1,37 +1,93 @@
-from rest_framework.permissions import BasePermission
-from accounts.models import Personnel, Patient
+from rest_framework import permissions
 
-class IsPersonnel(BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and isinstance(request.user, Personnel)
-
-class IsPatient(BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and isinstance(request.user, Patient)
-
-class IsPersonnelOrPatient(BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and (
-            isinstance(request.user, Personnel) or isinstance(request.user, Patient)
-        )
-
-class HasRole(BasePermission):
-    required_roles = []
+class HasPermission(permissions.BasePermission):
+    """Custom permission class that checks JWT token permissions"""
+    
+    def __init__(self, required_permission):
+        self.required_permission = required_permission
     
     def has_permission(self, request, view):
-        if not isinstance(request.user, Personnel):
+        if not request.user or not request.user.is_authenticated:
             return False
         
-        if hasattr(view, 'required_roles'):
-            required_roles = view.required_roles
-        else:
-            required_roles = self.required_roles
+        # Get permissions from token payload
+        token_payload = getattr(request.user, 'token_payload', {})
+        user_permissions = token_payload.get('permissions', [])
         
-        if not required_roles:
-            return True
+        return self.required_permission in user_permissions
+
+
+class IsPatient(permissions.BasePermission):
+    """Permission for patient-only access"""
+    
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
         
-        user_roles = request.user.role_assignments.filter(
-            is_active=True
-        ).values_list('role__name', flat=True)
+        token_payload = getattr(request.user, 'token_payload', {})
+        return token_payload.get('user_type') == 'patient'
+
+
+class IsPersonnel(permissions.BasePermission):
+    """Permission for personnel-only access"""
+    
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
         
-        return any(role in user_roles for role in required_roles)
+        token_payload = getattr(request.user, 'token_payload', {})
+        return token_payload.get('user_type') == 'personnel'
+
+
+class IsVerifiedPersonnel(permissions.BasePermission):
+    """Permission for verified personnel only"""
+    
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        token_payload = getattr(request.user, 'token_payload', {})
+        return (
+            token_payload.get('user_type') == 'personnel' and
+            token_payload.get('is_verified', False)
+        )
+
+
+class CanTriggerEmergency(permissions.BasePermission):
+    """Permission for personnel who can trigger emergency overrides"""
+    
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        token_payload = getattr(request.user, 'token_payload', {})
+        return (
+            token_payload.get('user_type') == 'personnel' and
+            token_payload.get('can_trigger_emergency', False)
+        )
+
+
+class HasRole(permissions.BasePermission):
+    """Permission class that checks if user has specific role"""
+    
+    def __init__(self, required_role):
+        self.required_role = required_role
+    
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        token_payload = getattr(request.user, 'token_payload', {})
+        user_roles = token_payload.get('roles', [])
+        
+        return self.required_role in user_roles
+
+
+# Helper functions to create permission instances
+def require_permission(permission_name):
+    """Factory function to create HasPermission instances"""
+    return HasPermission(permission_name)
+
+def require_role(role_name):
+    """Factory function to create HasRole instances"""
+    return HasRole(role_name)

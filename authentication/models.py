@@ -1,68 +1,44 @@
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
+from django.utils import timezone
+import uuid
 
-class CustomJWTToken(models.Model):
-    TOKEN_TYPES = (
-        ('access', 'Access Token'),
-        ('refresh', 'Refresh Token'),
-    )
+from .managers import UserManager  # Import the UserManager
+
+class User(AbstractBaseUser, PermissionsMixin):
+    objects = UserManager()  # Assign the custom manager
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    email = models.EmailField(unique=True)
+    username = models.CharField(max_length=150, unique=True, null=True, blank=True)
+    first_name = models.CharField(max_length=150)
+    last_name = models.CharField(max_length=150)
     
-    personnel = models.ForeignKey('accounts.Personnel', on_delete=models.CASCADE, null=True, blank=True, related_name='auth_tokens')
-    patient = models.ForeignKey('accounts.Patient', on_delete=models.CASCADE, null=True, blank=True, related_name='auth_tokens')
-    token = models.TextField()
-    token_type = models.CharField(max_length=10, choices=TOKEN_TYPES)
+    is_active = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)
+    
     created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
-    last_used = models.DateTimeField(null=True, blank=True)
-    ip_address = models.GenericIPAddressField(null=True, blank=True)
-    user_agent = models.TextField(blank=True)
-    is_active = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    last_login = models.DateTimeField(null=True, blank=True)
     
-    class Meta:
-        db_table = 'custom_jwt_tokens'
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['first_name', 'last_name']
     
-    @property 
-    def user(self):
-        return self.personnel or self.patient
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} ({self.email})"
 
-class OTPToken(models.Model):
-    OTP_TYPES = (
+class OTPVerification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='otp_verifications')
+    otp_code = models.CharField(max_length=6)
+    purpose = models.CharField(max_length=50, choices=[
         ('email_verification', 'Email Verification'),
         ('password_reset', 'Password Reset'),
         ('login_verification', 'Login Verification'),
-        ('account_unlock', 'Account Unlock'),
-    )
-    
-    personnel = models.ForeignKey('accounts.Personnel', on_delete=models.CASCADE, null=True, blank=True, related_name='otp_tokens')
-    patient = models.ForeignKey('accounts.Patient', on_delete=models.CASCADE, null=True, blank=True, related_name='otp_tokens')
-    otp_code = models.CharField(max_length=6)
-    otp_type = models.CharField(max_length=20, choices=OTP_TYPES)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
+    ])
     is_used = models.BooleanField(default=False)
-    attempts = models.IntegerField(default=0)
-    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    expires_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
     
-    @property
-    def user(self):
-        return self.personnel or self.patient
-
-class AccountLock(models.Model):
-    LOCK_REASONS = (
-        ('failed_attempts', 'Failed Login Attempts'),
-        ('security_breach', 'Security Breach'),
-        ('admin_action', 'Admin Action'),
-        ('suspicious_activity', 'Suspicious Activity'),
-    )
-    
-    personnel = models.OneToOneField('accounts.Personnel', on_delete=models.CASCADE, null=True, blank=True, related_name='account_lock')
-    patient = models.OneToOneField('accounts.Patient', on_delete=models.CASCADE, null=True, blank=True, related_name='account_lock')
-    locked_at = models.DateTimeField(auto_now_add=True)
-    unlock_at = models.DateTimeField(null=True, blank=True)
-    reason = models.CharField(max_length=20, choices=LOCK_REASONS)
-    locked_by = models.ForeignKey('accounts.Personnel', on_delete=models.SET_NULL, null=True, related_name='accounts_locked')
-    notes = models.TextField(blank=True)
-    is_active = models.BooleanField(default=True)
-    
-    @property
-    def user(self):
-        return self.personnel or self.patient
+    def is_expired(self):
+        return timezone.now() > self.expires_at

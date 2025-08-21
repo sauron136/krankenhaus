@@ -1,150 +1,219 @@
 from rest_framework import serializers
-from .models import Personnel, Patient, Role, PersonnelRole
+from django.contrib.auth import get_user_model
+from .models import Patient, Personnel, Role, EmergencyAccess
 
-class PersonnelProfileSerializer(serializers.ModelSerializer):
-    roles = serializers.SerializerMethodField()
+User = get_user_model()
 
+
+class UserBasicSerializer(serializers.ModelSerializer):
+    """Basic user info for profiles"""
     class Meta:
-        model = Personnel
-        fields = [
-                'id', 'email', 'username', 'first_name', 'last_name',
-                'employee_id', 'phone_work', 'phone_personal',
-                'emergency_contact', 'date_of_birth', 'hire_date',
-                'is_active', 'is_verified', 'created_at', 'role'
-                ]
-        read_only_fields = ['id', 'created_at', 'is_verified']
+        model = User
+        fields = ['first_name', 'last_name', 'email']
 
-    def get_roles(self, obj):
-        active_roles = obj.role_assignments.filter(is_active=True)
-        return RoleAssignmentSerializer(active_roles, many=True).data
-
-class PersonnelUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Personnel
-        fields = [
-                'first_name', 'last_name', 'phone_work', 'phone_personal',
-                'emergency_contact'
-                ]
-
-class PersonnelListSerializer(serializers.ModelSerializer):
-    roles = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Personnel
-        fields = [
-                'id', 'username', 'first_name', 'last_name', 'email',
-                'employee_id', 'is_active', 'hire_date', 'roles'
-                ]
-
-    def get_roles(self, obj):
-        active_roles = obj.role_assignments.filter(is_active=True).values_list('role__name', flat=True)
-        return list(active_roles)
-
-class PersonnelSearchSerializer(serializers.Serializer):
-    query = serializers.CharField(required=False, allow_blank=True)
-    role = serializers.CharField(required=False, allow_blank=True)
-    department = serializers.CharField(required=False, allow_blank=True)
-    is_active = serializers.BooleanField(required=False)
-    hire_date_from = serializers.DateField(required=False)
-    hire_date_to = serializers.DateField(required=False)
-
-class PersonnelCreateSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, min_length=8)
-
-    class Meta:
-        model = Personnel
-        fields = [
-                'email', 'username', 'first_name', 'last_name',
-                'employee_id', 'phone_work', 'phone_personal',
-                'emergency_contact', 'date_of_birth', 'hire_date',
-                'password'
-                ]
-
-    def create(self, validated_data):
-        password = validated_data.pop('password')
-        personnel = Personnel(**validated_data)
-        personnel.set_password(password)
-        personnel.is_active = True
-        personnel.is_verified = True
-        personnel.save()
-        return personnel
-
-class PatientProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Patient
-        fields = [
-                'id', 'email', 'first_name', 'last_name', 'phone_primary',
-                'phone_secondary', 'emergency_contact_name', 
-                'emergency_contact_phone', 'date_of_birth', 'address',
-                'is_active', 'is_verified', 'date_registered'
-                ]
-        read_only_fields = ['id', 'date_registered', 'is_verified']
-
-class PatientUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Patient
-        fields = [
-                'first_name', 'last_name', 'phone_primary', 'phone_secondary',
-                'emergency_contact_name', 'emergency_contact_phone', 'address'
-                ]
-
-class PatientListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Patient
-        fields = [
-                'id', 'email', 'first_name', 'last_name', 'phone_primary',
-                'date_of_birth', 'is_active', 'date_registered'
-                ]
 
 class RoleSerializer(serializers.ModelSerializer):
-    personnel_count = serializers.SerializerMethodField()
-    
+    """Role serializer"""
     class Meta:
         model = Role
-        fields = ['id', 'name', 'description', 'created_at', 'personnel_count']
-        read_only_fields = ['id', 'created_at']
-    
-    def get_personnel_count(self, obj):
-        return obj.personnelrole_set.filter(is_active=True).count()
+        fields = ['id', 'name', 'description', 'can_emergency_override']
 
-class RoleAssignmentSerializer(serializers.ModelSerializer):
-    role_name = serializers.CharField(source='role.name', read_only=True)
-    assigned_by_name = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = PersonnelRole
-        fields = [
-            'id', 'role_name', 'assigned_date', 'expires_date',
-            'is_active', 'notes', 'assigned_by_name'
-        ]
-    
-    def get_assigned_by_name(self, obj):
-        if obj.assigned_by:
-            return f"{obj.assigned_by.first_name} {obj.assigned_by.last_name}"
-        return None
 
-class AssignRoleSerializer(serializers.Serializer):
-    personnel_id = serializers.IntegerField()
-    role_id = serializers.IntegerField()
-    expires_date = serializers.DateTimeField(required=False, allow_null=True)
-    notes = serializers.CharField(required=False, allow_blank=True)
-
-class PersonnelBasicSerializer(serializers.ModelSerializer):
-    full_name = serializers.CharField(source='get_full_name', read_only=True)
-    
-    class Meta:
-        model = Personnel
-        fields = [
-            'id', 'username', 'first_name', 'last_name', 'full_name',
-            'employee_id', 'email'
-        ]
-
-class PatientBasicSerializer(serializers.ModelSerializer):
-    full_name = serializers.CharField(source='get_full_name', read_only=True)
+class PatientProfileSerializer(serializers.ModelSerializer):
+    """Full patient profile for viewing"""
+    user = UserBasicSerializer(read_only=True)
+    full_name = serializers.SerializerMethodField()
+    age = serializers.SerializerMethodField()
     
     class Meta:
         model = Patient
         fields = [
-            'id', 'first_name', 'last_name', 'full_name', 
-            'email', 'phone_primary', 'date_of_birth'
+            'patient_id', 'user', 'full_name', 'phone_number', 
+            'date_of_birth', 'age', 'gender', 'address', 
+            'emergency_contact_name', 'emergency_contact_phone',
+            'emergency_contact_relationship', 'blood_group',
+            'allergies', 'medical_conditions', 'current_medications',
+            'insurance_provider', 'insurance_policy_number',
+            'profile_completed', 'created_at', 'updated_at'
         ]
+    
+    def get_full_name(self, obj):
+        return f"{obj.user.first_name} {obj.user.last_name}".strip()
+    
+    def get_age(self, obj):
+        if obj.date_of_birth:
+            from datetime import date
+            today = date.today()
+            age = today.year - obj.date_of_birth.year
+            if today.month < obj.date_of_birth.month or \
+               (today.month == obj.date_of_birth.month and today.day < obj.date_of_birth.day):
+                age -= 1
+            return age
+        return None
+
+
+class PatientUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for updating patient profile"""
+    first_name = serializers.CharField(source='user.first_name', required=False)
+    last_name = serializers.CharField(source='user.last_name', required=False)
+    
+    class Meta:
+        model = Patient
+        fields = [
+            'first_name', 'last_name', 'phone_number', 'date_of_birth', 
+            'gender', 'address', 'emergency_contact_name', 
+            'emergency_contact_phone', 'emergency_contact_relationship',
+            'blood_group', 'allergies', 'medical_conditions', 
+            'current_medications', 'insurance_provider', 'insurance_policy_number'
+        ]
+    
+    def validate_phone_number(self, value):
+        if value and len(value.replace(' ', '').replace('-', '').replace('+', '')) < 10:
+            raise serializers.ValidationError("Phone number must be at least 10 digits")
+        return value
+    
+    def validate_emergency_contact_phone(self, value):
+        if value and len(value.replace(' ', '').replace('-', '').replace('+', '')) < 10:
+            raise serializers.ValidationError("Emergency contact phone must be at least 10 digits")
+        return value
+    
+    def update(self, instance, validated_data):
+        # Handle nested user data
+        user_data = validated_data.pop('user', {})
+        
+        # Update user fields
+        if user_data:
+            for attr, value in user_data.items():
+                setattr(instance.user, attr, value)
+            instance.user.save()
+        
+        # Update patient fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+        return instance
+
+
+class PersonnelProfileSerializer(serializers.ModelSerializer):
+    """Full personnel profile for viewing"""
+    user = UserBasicSerializer(read_only=True)
+    role = RoleSerializer(read_only=True)
+    full_name = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Personnel
+        fields = [
+            'employee_id', 'user', 'full_name', 'role', 'department',
+            'phone_number', 'date_of_birth', 'address', 'hire_date',
+            'medical_license_number', 'specialization', 'is_verified',
+            'created_at', 'updated_at'
+        ]
+    
+    def get_full_name(self, obj):
+        return f"{obj.user.first_name} {obj.user.last_name}".strip()
+
+
+class PersonnelUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for updating personnel profile"""
+    first_name = serializers.CharField(source='user.first_name', required=False)
+    last_name = serializers.CharField(source='user.last_name', required=False)
+    
+    class Meta:
+        model = Personnel
+        fields = [
+            'first_name', 'last_name', 'department', 'phone_number',
+            'date_of_birth', 'address', 'medical_license_number', 'specialization'
+        ]
+    
+    def validate_phone_number(self, value):
+        if value and len(value.replace(' ', '').replace('-', '').replace('+', '')) < 10:
+            raise serializers.ValidationError("Phone number must be at least 10 digits")
+        return value
+    
+    def validate_medical_license_number(self, value):
+        if value and len(value.strip()) < 5:
+            raise serializers.ValidationError("Medical license number must be at least 5 characters")
+        return value
+    
+    def update(self, instance, validated_data):
+        # Handle nested user data
+        user_data = validated_data.pop('user', {})
+        
+        # Update user fields
+        if user_data:
+            for attr, value in user_data.items():
+                setattr(instance.user, attr, value)
+            instance.user.save()
+        
+        # Update personnel fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+        return instance
+
+
+class PersonnelVerificationSerializer(serializers.Serializer):
+    """Serializer for personnel verification by admin"""
+    employee_id = serializers.CharField(max_length=20)
+    action = serializers.ChoiceField(choices=['verify', 'reject'])
+    role_id = serializers.IntegerField(required=False)
+    
+    def validate_action(self, value):
+        if value not in ['verify', 'reject']:
+            raise serializers.ValidationError("Action must be 'verify' or 'reject'")
+        return value
+    
+    def validate(self, attrs):
+        if attrs.get('action') == 'verify' and not attrs.get('role_id'):
+            raise serializers.ValidationError("Role is required when verifying personnel")
+        return attrs
+
+
+class EmergencyAccessSerializer(serializers.ModelSerializer):
+    """Serializer for emergency access logs"""
+    patient_name = serializers.SerializerMethodField()
+    personnel_name = serializers.SerializerMethodField()
+    patient_id = serializers.CharField(source='patient.patient_id', read_only=True)
+    employee_id = serializers.CharField(source='personnel.employee_id', read_only=True)
+    
+    class Meta:
+        model = EmergencyAccess
+        fields = [
+            'id', 'patient_id', 'patient_name', 'employee_id', 
+            'personnel_name', 'reason', 'search_method', 
+            'ip_address', 'accessed_at'
+        ]
+    
+    def get_patient_name(self, obj):
+        return f"{obj.patient.user.first_name} {obj.patient.user.last_name}".strip()
+    
+    def get_personnel_name(self, obj):
+        return f"{obj.personnel.user.first_name} {obj.personnel.user.last_name}".strip()
+
+
+class PatientSearchSerializer(serializers.Serializer):
+    """Serializer for patient search"""
+    query = serializers.CharField(max_length=255, required=False)
+    patient_id = serializers.CharField(max_length=20, required=False)
+    
+    def validate(self, attrs):
+        if not attrs.get('query') and not attrs.get('patient_id'):
+            raise serializers.ValidationError("Either query or patient_id is required")
+        
+        if attrs.get('query') and len(attrs['query']) < 2:
+            raise serializers.ValidationError("Query must be at least 2 characters long")
+        
+        return attrs
+
+
+class PersonnelSearchSerializer(serializers.Serializer):
+    """Serializer for personnel search"""
+    query = serializers.CharField(max_length=255)
+    role = serializers.CharField(max_length=50, required=False)
+    
+    def validate_query(self, value):
+        if len(value) < 2:
+            raise serializers.ValidationError("Query must be at least 2 characters long")
+        return value

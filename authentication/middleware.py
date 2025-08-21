@@ -1,27 +1,35 @@
-from django.contrib.auth.models import AnonymousUser
+from django.http import JsonResponse
 from django.utils.deprecation import MiddlewareMixin
-from .backends import JWTAuthenticationBackend
+from .jwt_handler import JWTTokenBlacklist
+import json
 
 class JWTAuthenticationMiddleware(MiddlewareMixin):
-    def __init__(self, get_response):
-        self.get_response = get_response
-        self.backend = JWTAuthenticationBackend()
-        
-    def __call__(self, request):
-        self.process_request(request)
-        response = self.get_response(request)
-        return response
+    """Middleware to handle JWT token blacklist checking"""
     
     def process_request(self, request):
-        auth_header = request.META.get('HTTP_AUTHORIZATION')
+        # Skip for certain paths
+        skip_paths = [
+            '/admin/',
+            '/static/',
+            '/media/',
+            '/api/auth/register/',
+            '/api/auth/login/',
+            '/api/auth/verify-email/',
+            '/api/auth/password/reset/',
+        ]
         
+        if any(request.path.startswith(path) for path in skip_paths):
+            return None
+        
+        # Check for blacklisted tokens
+        auth_header = request.META.get('HTTP_AUTHORIZATION')
         if auth_header and auth_header.startswith('Bearer '):
             token = auth_header.split(' ')[1]
-            user = self.backend.authenticate(request, token=token)
             
-            if user:
-                request.user = user
-            else:
-                request.user = AnonymousUser()
-        else:
-            request.user = AnonymousUser()
+            if JWTTokenBlacklist.is_token_blacklisted(token):
+                return JsonResponse({
+                    'error': 'Token has been revoked',
+                    'code': 'TOKEN_REVOKED'
+                }, status=401)
+        
+        return None

@@ -96,3 +96,45 @@ Bad Request: /api/auth/patient/register/
 Watching for file changes with StatReloader
 /home/tofunmi/dev/backend/krankenhaus/authentication/views.py changed, reloading.
 Watching for file changes with StatReloader
+Internal Server Error: /api/accounts/patient/profile/
+Traceback (most recent call last):
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/rest_framework/views.py", line 503, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/rest_framework/views.py", line 421, in initial
+    self.check_permissions(request)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/rest_framework/views.py", line 339, in check_permissions
+    self.permission_denied(
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/rest_framework/views.py", line 180, in permission_denied
+    raise exceptions.NotAuthenticated()
+rest_framework.exceptions.NotAuthenticated: Authentication credentials were not provided.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/django/views/generic/base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/rest_framework/views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/rest_framework/views.py", line 462, in handle_exception
+    auth_header = self.get_authenticate_header(self.request)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/rest_framework/views.py", line 196, in get_authenticate_header
+    return authenticators[0].authenticate_header(request)
+AttributeError: 'JWTAuthenticationBackend' object has no attribute 'authenticate_header'
+/home/tofunmi/dev/backend/krankenhaus/authentication/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/tofunmi/dev/backend/krankenhaus/authentication/views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+/home/tofunmi/dev/backend/krankenhaus/authentication/views.py changed, reloading.
+Watching for file changes with StatReloader
+Bad Request: /api/auth/patient/register/
+/home/tofunmi/dev/backend/krankenhaus/accounts/models.py changed, reloading.
+Watching for file changes with StatReloader
+/home/tofunmi/dev/backend/krankenhaus/authentication/serializers.py changed, reloading.
+Watching for file changes with StatReloader
