@@ -17,3 +17,82 @@ Watching for file changes with StatReloader
 /home/tofunmi/dev/backend/krankenhaus/krankenhaus/settings/base.py changed, reloading.
 Watching for file changes with StatReloader
 /home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/sqlparse/engine/grouping.py changed, reloading.
+Watching for file changes with StatReloader
+Internal Server Error: /api/auth/patient/register/
+Traceback (most recent call last):
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/rest_framework/views.py", line 503, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/rest_framework/views.py", line 421, in initial
+    self.check_permissions(request)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/rest_framework/views.py", line 339, in check_permissions
+    self.permission_denied(
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/rest_framework/views.py", line 180, in permission_denied
+    raise exceptions.NotAuthenticated()
+rest_framework.exceptions.NotAuthenticated: Authentication credentials were not provided.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/django/views/generic/base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/rest_framework/views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/rest_framework/views.py", line 462, in handle_exception
+    auth_header = self.get_authenticate_header(self.request)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/rest_framework/views.py", line 196, in get_authenticate_header
+    return authenticators[0].authenticate_header(request)
+AttributeError: 'JWTAuthenticationBackend' object has no attribute 'authenticate_header'
+Watching for file changes with StatReloader
+Bad Request: /api/auth/patient/register/
+Watching for file changes with StatReloader
+Bad Request: /api/auth/patient/register/
+/home/tofunmi/dev/backend/krankenhaus/krankenhaus/urls.py changed, reloading.
+Watching for file changes with StatReloader
+Internal Server Error: /api/docs/
+Traceback (most recent call last):
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/rest_framework/response.py", line 74, in rendered_content
+    ret = renderer.render(self.data, accepted_media_type, context)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/drf_yasg/renderers.py", line 79, in render
+    return render_to_string(self.template, renderer_context, renderer_context['request'])
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/django/template/loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: drf-yasg/swagger-ui.html
+Internal Server Error: /api/docs/
+Traceback (most recent call last):
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/rest_framework/response.py", line 74, in rendered_content
+    ret = renderer.render(self.data, accepted_media_type, context)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/drf_yasg/renderers.py", line 79, in render
+    return render_to_string(self.template, renderer_context, renderer_context['request'])
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/tofunmi/dev/backend/krankenhaus/venv/lib/python3.10/site-packages/django/template/loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: drf-yasg/swagger-ui.html
+Bad Request: /api/auth/patient/register/
+/home/tofunmi/dev/backend/krankenhaus/krankenhaus/settings/base.py changed, reloading.
+Watching for file changes with StatReloader
+Bad Request: /api/auth/patient/register/
+/home/tofunmi/dev/backend/krankenhaus/krankenhaus/urls.py changed, reloading.
+Watching for file changes with StatReloader
+/home/tofunmi/dev/backend/krankenhaus/authentication/views.py changed, reloading.
+Watching for file changes with StatReloader

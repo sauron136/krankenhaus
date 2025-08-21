@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 from accounts.models import Personnel, Patient
 from .services.jwt_service import JWTService
 from .services.otp_service import OTPService
@@ -18,6 +19,7 @@ from .serializers import (
 )
 
 class PersonnelLoginView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = PersonnelLoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -57,6 +59,7 @@ class PersonnelLoginView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class PatientLoginView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = PatientLoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -95,6 +98,7 @@ class PatientLoginView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class PersonnelRegisterView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = PersonnelRegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -113,6 +117,7 @@ class PersonnelRegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class PatientRegisterView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = PatientRegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -131,6 +136,7 @@ class PatientRegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class VerifyEmailView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = OTPVerificationSerializer(data=request.data)
         if serializer.is_valid():
@@ -170,6 +176,7 @@ class VerifyEmailView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ResendOTPView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = ResendOTPSerializer(data=request.data)
         if serializer.is_valid():
@@ -199,6 +206,7 @@ class ResendOTPView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class PasswordResetRequestView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = PasswordResetRequestSerializer(data=request.data)
         if serializer.is_valid():
@@ -228,6 +236,7 @@ class PasswordResetRequestView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class PasswordResetConfirmView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = PasswordResetConfirmSerializer(data=request.data)
         if serializer.is_valid():
@@ -291,6 +300,7 @@ class ChangePasswordView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class TokenRefreshView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = TokenRefreshSerializer(data=request.data)
         if serializer.is_valid():
@@ -310,6 +320,7 @@ class TokenRefreshView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ValidateTokenView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         auth_header = request.META.get('HTTP_AUTHORIZATION')
         if auth_header and auth_header.startswith('Bearer '):
@@ -339,6 +350,7 @@ class ValidateTokenView(APIView):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         auth_header = request.META.get('HTTP_AUTHORIZATION')
         if auth_header and auth_header.startswith('Bearer '):
